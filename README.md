@@ -35,6 +35,7 @@ One click on the icon, or Shift+Enter, swaps the bar for the full editor:
 | Shift+Enter | Opens the full editor, keeping the text and adding the line break |
 | Cancel in the full editor | Discards the note and returns to the one-liner, both boxes empty |
 | Drop a file on the one-liner | Opens the full editor, attaches the file and inserts the inline image markup, exactly as core does |
+| Paste an image (Ctrl+V) into the one-liner | The same as dropping it. Clipboard text wins, as in core, so pasted text stays in the one-liner |
 | Quote on an existing note | Lands in this editor instead of reopening the issue edit form |
 | Edit on the issue | The bar disappears and its text moves into the edit form's own note box |
 

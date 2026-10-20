@@ -410,5 +410,46 @@
         window.uploadAndAttachFiles(dt.files, $fileField);
       });
     }
+
+    /* --- pasting an image into the one-liner -------------------------------
+       Core handles paste only on a .wiki-edit field inside the form's .box, so
+       the one-liner (an <input>, outside the box) gets nothing. Open the full
+       editor and replay the paste through core's own copyImageFromClipboard,
+       aimed at the textarea: it names the file clipboard-<timestamp>, attaches
+       it and inserts the inline markup, exactly as a paste there would.
+
+       The checks mirror core's: clipboard text wins over an image, so pasting
+       from an office document still pastes its text into the one-liner. The
+       clipboard data is only readable during the event, so this stays
+       synchronous. */
+    if (window.File && window.FormData &&
+        typeof window.copyImageFromClipboard === 'function') {
+
+      $input.on('paste', function (e) {
+        var cd = e.originalEvent && e.originalEvent.clipboardData;
+        if (!cd || !cd.files || cd.files.length === 0) { return; }
+        if ($.inArray('text/plain', cd.types) > -1) { return; }
+
+        var hasImage = false;
+        $.each(cd.files, function () {
+          if (this.type.indexOf('image') !== -1) { hasImage = true; }
+        });
+        if (!hasImage) { return; }
+
+        // No attachment field means no permission to attach; leave it alone.
+        if ($form.find('input:file.filedrop').length === 0) { return; }
+
+        e.preventDefault();
+        expand(true);
+
+        // Core inserts at the caret, so put it after the carried-over text.
+        var el = $textarea.get(0);
+        if (el.setSelectionRange) {
+          el.setSelectionRange(el.value.length, el.value.length);
+        }
+
+        window.copyImageFromClipboard.call(el, { target: el, clipboardData: cd });
+      });
+    }
   });
 })();
