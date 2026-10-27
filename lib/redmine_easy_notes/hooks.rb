@@ -23,6 +23,7 @@ module RedmineEasyNotes
     def controller_issues_edit_before_save(context)
       params = context[:params]
       journal = context[:journal]
+      return unless RedmineEasyNotes::Settings.silencer?
       return unless journal && params && params[:suppress_mail] == '1'
       return unless User.current.allowed_to?(:suppress_mail_notifications, journal.project)
 

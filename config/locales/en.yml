@@ -9,3 +9,6 @@ en:
   label_easy_notes_notify: "Watchers will be Notified"
   label_easy_notes_suppressed: "Notifications are Suppressed"
   permission_suppress_mail_notifications: "Suppress email notifications"
+  setting_easy_notes_private_toggle: "Private notes toggleable icon in quick notes mini form"
+  setting_easy_notes_silencer: "Enable redmine_silencer feature"
+  setting_easy_notes_suppress_toggle: "Suppress watchers toggleable icon in quick notes mini form"

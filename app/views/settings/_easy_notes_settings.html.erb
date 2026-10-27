@@ -1,0 +1,35 @@
+<%# Administration -> Plugins -> Easy notes -> Configure.
+    Each checkbox has a hidden '0' ahead of it, because core saves exactly the
+    hash this form posts: an unticked box would otherwise vanish from it and
+    fall back to its default, which is on. %>
+<p>
+  <label for="settings_private_toggle"><%= l(:setting_easy_notes_private_toggle) %></label>
+  <%= hidden_field_tag 'settings[private_toggle]', '0', id: nil %>
+  <%= check_box_tag 'settings[private_toggle]', '1', RedmineEasyNotes::Settings.private_toggle?,
+                    id: 'settings_private_toggle' %>
+</p>
+
+<p>
+  <label for="settings_silencer"><%= l(:setting_easy_notes_silencer) %></label>
+  <%= hidden_field_tag 'settings[silencer]', '0', id: nil %>
+  <%= check_box_tag 'settings[silencer]', '1', RedmineEasyNotes::Settings.silencer?,
+                    id: 'settings_silencer' %>
+</p>
+
+<%# Only offered while the feature is on. Hiding it does not change what it
+    holds, so switching the feature back on restores the previous choice. %>
+<p id="settings_suppress_toggle_row"
+   style="<%= 'display:none;' unless RedmineEasyNotes::Settings.silencer? %>">
+  <label for="settings_suppress_toggle"><%= l(:setting_easy_notes_suppress_toggle) %></label>
+  <%= hidden_field_tag 'settings[suppress_toggle]', '0', id: nil %>
+  <%= check_box_tag 'settings[suppress_toggle]', '1', RedmineEasyNotes::Settings.on?('suppress_toggle'),
+                    id: 'settings_suppress_toggle' %>
+</p>
+
+<%= javascript_tag do %>
+  $(function () {
+    $('#settings_silencer').on('change', function () {
+      $('#settings_suppress_toggle_row').toggle(this.checked);
+    });
+  });
+<% end %>

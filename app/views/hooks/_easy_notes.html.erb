@@ -8,7 +8,13 @@
 <% if @issue && !@issue.new_record? &&
       @issue.project&.module_enabled?(:easy_notes) &&
       @issue.notes_addable? %>
-  <% suppressible = User.current.allowed_to?(:suppress_mail_notifications, @issue.project) %>
+  <%# Each toggle on the bar has its own switch in the plugin settings; the
+      checkboxes in the full editor follow the permissions alone. %>
+  <% private_toggle = @issue.safe_attribute?('private_notes') &&
+                      RedmineEasyNotes::Settings.private_toggle? %>
+  <% suppressible = RedmineEasyNotes::Settings.silencer? &&
+                    User.current.allowed_to?(:suppress_mail_notifications, @issue.project) %>
+  <% suppress_toggle = suppressible && RedmineEasyNotes::Settings.suppress_toggle? %>
   <%= stylesheet_link_tag 'easy_notes', plugin: 'redmine_easy_notes' %>
 
   <div id="easy-notes" class="journal" style="display:none;">
@@ -33,7 +39,7 @@
           <%# Each toggle mirrors, and stays in sync with, a checkbox in the full
               editor below: the off icon shows until it is pressed, then the on
               icon, coloured like a checked checkbox. %>
-          <% if @issue.safe_attribute?('private_notes') %>
+          <% if private_toggle %>
             <%# Public/private, mirroring issue[private_notes]. %>
             <a href="#" id="easy-notes-private-toggle" class="icon-only easy-notes-toggle"
                title="<%= l(:label_easy_notes_public_note) %>"
@@ -44,7 +50,7 @@
               <%= sprite_icon('spy', css_class: 'easy-notes-icon-on', plugin: 'redmine_easy_notes') %>
             </a>
           <% end %>
-          <% if suppressible %>
+          <% if suppress_toggle %>
             <%# Notify/suppress, mirroring suppress_mail. %>
             <a href="#" id="easy-notes-suppress-toggle" class="icon-only easy-notes-toggle"
                title="<%= l(:label_easy_notes_notify) %>"

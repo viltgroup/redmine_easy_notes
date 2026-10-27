@@ -9,3 +9,6 @@ pt-BR:
   label_easy_notes_notify: "Os observadores serão notificados"
   label_easy_notes_suppressed: "As notificações estão suprimidas"
   permission_suppress_mail_notifications: "Suprimir notificações por e-mail"
+  setting_easy_notes_private_toggle: "Ícone de nota privada no formulário rápido"
+  setting_easy_notes_silencer: "Ativar a funcionalidade redmine_silencer"
+  setting_easy_notes_suppress_toggle: "Ícone de suprimir notificações no formulário rápido"

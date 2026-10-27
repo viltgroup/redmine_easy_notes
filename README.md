@@ -88,6 +88,24 @@ The permission sits outside the module, as it did under the silencer, so the
 edit form's checkbox works in every project. The bar's toggle needs the module,
 like the rest of the bar.
 
+## Plugin settings
+
+**Administration, Plugins, Redmine Easy Notes, Configure** has three switches,
+all on by default:
+
+| Setting | Off means |
+|---|---|
+| Private notes toggleable icon in quick notes mini form | No public/private icon on the bar. The full editor's "Private notes" checkbox stays |
+| Enable redmine_silencer feature | No suppress icon, no "Suppress Notifications" checkboxes anywhere, and a submitted `suppress_mail` is ignored |
+| Suppress watchers toggleable icon in quick notes mini form | No suppress icon on the bar. The checkboxes stay. Only offered while the feature above is on |
+
+With an icon switched off, a value set on the full editor's checkbox is cleared
+when the editor is cancelled, since the bar has nowhere to show it.
+
+The `suppress_mail_notifications` permission stays in the role form even with
+the feature off, because permissions are registered at boot. It grants nothing
+until the feature is switched back on.
+
 ## Switching it on per project
 
 It is a project module, so it is off until someone turns it on. Go to

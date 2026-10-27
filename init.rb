@@ -2,6 +2,8 @@
 
 require 'redmine'
 
+require File.expand_path('lib/redmine_easy_notes/settings', __dir__)
+
 Redmine::Plugin.register :redmine_easy_notes do
   name 'Redmine Easy Notes'
   author 'joaoperfig'
@@ -14,6 +16,11 @@ Redmine::Plugin.register :redmine_easy_notes do
   # The markup mirrors Redmine 7's journal header (sprite_icon, flex .journal-header,
   # textarea_tag). Earlier versions are untested -- widen this if you verify one.
   requires_redmine version_or_higher: '7.0.0'
+
+  # Administration -> Plugins -> Configure. Read through
+  # RedmineEasyNotes::Settings, which documents each switch.
+  settings default: RedmineEasyNotes::Settings::DEFAULTS.dup,
+           partial: 'settings/easy_notes_settings'
 
   # Switchable per project, under Project settings -> Modules. Where it is off,
   # the issue page is left exactly as core renders it: no bar, no stylesheet, no
@@ -38,6 +45,11 @@ Redmine::Plugin.register :redmine_easy_notes do
   # Deliberately outside the module, as it was under the silencer: the issue
   # edit form's checkbox works in every project, and only the quick bar's toggle
   # needs Easy notes switched on.
+  #
+  # Registered even while the feature is switched off in the plugin settings,
+  # since permissions are fixed at boot and the setting is not. Switched off,
+  # the permission grants nothing: no checkbox renders and the hook ignores
+  # the parameter.
   permission :suppress_mail_notifications, {}
 end
 

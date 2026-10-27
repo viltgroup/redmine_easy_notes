@@ -50,16 +50,22 @@
        Each toggle and its checkbox in the full editor are two views of one
        value, so they are kept in sync in both directions. Anything else lets the
        bar claim a note is public, or that watchers will be told, while the
-       checkbox says otherwise. A toggle the user may not use is not rendered;
-       its handle then reads as off and set() does nothing. */
+       checkbox says otherwise.
+
+       The value is held here rather than read off the icon, because the icon
+       can be switched off in the plugin settings while the checkbox stays: the
+       value still has to follow the checkbox, and quoting a private note still
+       has to tick it. With no checkbox (no permission) it is always off. */
 
     function makeToggle($toggle, $checkbox) {
+      var on = false;
+
       function isOn() {
-        return $toggle.hasClass('on');
+        return on;
       }
 
       function paint() {
-        var on = isOn();
+        if ($toggle.length === 0) { return; }
         var label = $toggle.data(on ? 'label-on' : 'label-off');
 
         // Redmine puts a jQuery UI tooltip on every [title]. It caches the title
@@ -82,28 +88,25 @@
         }
       }
 
-      function set(on) {
-        if ($toggle.length === 0) { return; }
-        $toggle.toggleClass('on', !!on);
-        if ($checkbox.length) { $checkbox.prop('checked', !!on); }
+      function set(value) {
+        on = !!value && $checkbox.length > 0;
+        if ($checkbox.length) { $checkbox.prop('checked', on); }
         paint();
       }
 
-      if ($toggle.length) {
-        set($checkbox.length ? $checkbox.prop('checked') : false);
+      set($checkbox.length ? $checkbox.prop('checked') : false);
 
-        $toggle.on('click', function (e) {
-          e.preventDefault();
-          set(!isOn());
-        });
+      $toggle.on('click', function (e) {
+        e.preventDefault();
+        set(!on);
+      });
 
-        // Changing the checkbox in the full editor must move the toggle too.
-        $checkbox.on('change', function () {
-          set($checkbox.prop('checked'));
-        });
-      }
+      // Changing the checkbox in the full editor must move the toggle too.
+      $checkbox.on('change', function () {
+        set($checkbox.prop('checked'));
+      });
 
-      return { isOn: isOn, set: set };
+      return { isOn: isOn, set: set, onBar: $toggle.length > 0 };
     }
 
     // Resolve the colour a checked checkbox actually paints, so a theme that
@@ -152,6 +155,13 @@
       // The toggles are deliberately NOT reset: they are visible on the bar,
       // and quietly flipping a note back to public is the one mistake here with
       // a real consequence. Suppress follows suit so the two behave alike.
+      //
+      // A toggle switched off in the plugin settings is not visible, though, so
+      // a value set in the full editor would ride along unseen on the next
+      // one-line note. Those are cleared instead.
+      $.each([privateToggle, suppressToggle], function (i, toggle) {
+        if (!toggle.onBar) { toggle.set(false); }
+      });
       syncMiniSubmit();
       $input.trigger('focus');
     }
