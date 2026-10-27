@@ -1,0 +1,10 @@
+<%# "Suppress Notifications" under the notes of core's issue edit form. Off by
+    default; keeps the user's choice when the form is re-rendered after a
+    validation error. The id is the one easy_notes.js looks for when the bar
+    hands a note over to this form. %>
+<% if User.current.allowed_to?(:suppress_mail_notifications, @issue.project) %>
+  <% checked = params[:suppress_mail] == '1' %>
+  <%= hidden_field_tag 'suppress_mail', '0', id: nil %>
+  <%= check_box_tag 'suppress_mail', '1', checked, id: 'issue_suppress_mail' %>
+  <label for="issue_suppress_mail"><%= l(:label_easy_notes_suppress_mail) %></label>
+<% end %>

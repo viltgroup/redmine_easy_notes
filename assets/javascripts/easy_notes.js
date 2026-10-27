@@ -13,8 +13,8 @@
     var $input    = $('#easy-notes-input');
     var $textarea = $('#easy-notes-textarea');
     var $form     = $('#easy-notes-form');
-    var $toggle   = $('#easy-notes-private-toggle');
     var $private  = $('#easy-notes-private');
+    var $suppress = $('#easy-notes-suppress');
     var $miniSubmit = $('#easy-notes-mini-submit');
 
     /* --- position -----------------------------------------------------------
@@ -46,67 +46,82 @@
     $input.on('input change', syncMiniSubmit);
     syncMiniSubmit();
 
-    /* --- public / private toggle -------------------------------------------
-       The toggle and the full editor's checkbox are two views of one value, so
-       they are kept in sync in both directions. Anything else lets the bar claim
-       a note is public while the checkbox says otherwise. */
+    /* --- toggles: public / private, notify / suppress ---------------------
+       Each toggle and its checkbox in the full editor are two views of one
+       value, so they are kept in sync in both directions. Anything else lets the
+       bar claim a note is public, or that watchers will be told, while the
+       checkbox says otherwise. A toggle the user may not use is not rendered;
+       its handle then reads as off and set() does nothing. */
 
-    function isPrivate() {
-      return $toggle.hasClass('private');
-    }
-
-    function paintToggle() {
-      var on = isPrivate();
-      var label = $toggle.data(on ? 'label-private' : 'label-public');
-
-      // Redmine puts a jQuery UI tooltip on every [title]. It caches the title
-      // and restores that cached value when the tooltip closes, so simply
-      // rewriting the attribute is not enough: toggling while the tooltip is
-      // open would revert the label as soon as the pointer left. Destroy first,
-      // then re-init through core's own helper so the options stay in step.
-      var hadTooltip = !!$toggle.data('ui-tooltip');
-      if (hadTooltip) {
-        try { $toggle.tooltip('destroy'); } catch (e) { /* not initialised */ }
+    function makeToggle($toggle, $checkbox) {
+      function isOn() {
+        return $toggle.hasClass('on');
       }
 
-      $toggle
-        .toggleClass('private', on)
-        .attr('aria-pressed', on ? 'true' : 'false')
-        .attr('title', label);
+      function paint() {
+        var on = isOn();
+        var label = $toggle.data(on ? 'label-on' : 'label-off');
 
-      if (hadTooltip && typeof window.setupHoverTooltips === 'function') {
-        window.setupHoverTooltips($toggle.parent());
-      }
-    }
+        // Redmine puts a jQuery UI tooltip on every [title]. It caches the title
+        // and restores that cached value when the tooltip closes, so simply
+        // rewriting the attribute is not enough: toggling while the tooltip is
+        // open would revert the label as soon as the pointer left. Destroy first,
+        // then re-init through core's own helper so the options stay in step.
+        var hadTooltip = !!$toggle.data('ui-tooltip');
+        if (hadTooltip) {
+          try { $toggle.tooltip('destroy'); } catch (e) { /* not initialised */ }
+        }
 
-    function setPrivate(on) {
-      $toggle.toggleClass('private', !!on);
-      if ($private.length) { $private.prop('checked', !!on); }
-      paintToggle();
-    }
+        $toggle
+          .toggleClass('on', on)
+          .attr('aria-pressed', on ? 'true' : 'false')
+          .attr('title', label);
 
-    if ($toggle.length) {
-      // Resolve the colour a checked checkbox actually paints, so a theme that
-      // sets accent-color on checkboxes is matched instead of guessed at.
-      if ($private.length && window.getComputedStyle) {
-        var accent = window.getComputedStyle($private.get(0)).accentColor;
-        if (accent && accent !== 'auto' && accent !== '') {
-          $wrap.get(0).style.setProperty('--easy-notes-private-color', accent);
+        if (hadTooltip && typeof window.setupHoverTooltips === 'function') {
+          window.setupHoverTooltips($toggle.parent());
         }
       }
 
-      setPrivate($private.length ? $private.prop('checked') : false);
+      function set(on) {
+        if ($toggle.length === 0) { return; }
+        $toggle.toggleClass('on', !!on);
+        if ($checkbox.length) { $checkbox.prop('checked', !!on); }
+        paint();
+      }
 
-      $toggle.on('click', function (e) {
-        e.preventDefault();
-        setPrivate(!isPrivate());
-      });
+      if ($toggle.length) {
+        set($checkbox.length ? $checkbox.prop('checked') : false);
 
-      // Changing the checkbox in the full editor must move the toggle too.
-      $private.on('change', function () {
-        setPrivate($private.prop('checked'));
-      });
+        $toggle.on('click', function (e) {
+          e.preventDefault();
+          set(!isOn());
+        });
+
+        // Changing the checkbox in the full editor must move the toggle too.
+        $checkbox.on('change', function () {
+          set($checkbox.prop('checked'));
+        });
+      }
+
+      return { isOn: isOn, set: set };
     }
+
+    // Resolve the colour a checked checkbox actually paints, so a theme that
+    // sets accent-color on checkboxes is matched instead of guessed at. Either
+    // checkbox will do; they are styled alike.
+    var $anyCheckbox = $private.add($suppress).first();
+    if ($anyCheckbox.length && window.getComputedStyle) {
+      var accent = window.getComputedStyle($anyCheckbox.get(0)).accentColor;
+      if (accent && accent !== 'auto' && accent !== '') {
+        $wrap.get(0).style.setProperty('--easy-notes-private-color', accent);
+      }
+    }
+
+    var privateToggle  = makeToggle($('#easy-notes-private-toggle'), $private);
+    var suppressToggle = makeToggle($('#easy-notes-suppress-toggle'), $suppress);
+
+    function isPrivate() { return privateToggle.isOn(); }
+    function setPrivate(on) { privateToggle.set(on); }
 
     /* There is one note being composed and one of the two editors is showing it,
        so switching hands the text over rather than leaving a copy behind. Only
@@ -118,10 +133,9 @@
       if (carryText && $full.is(':hidden')) {
         $textarea.val($input.val());
       }
-      // Carry the toggle state onto the checkbox.
-      if ($toggle.length && $private.length) {
-        $private.prop('checked', isPrivate());
-      }
+      // Carry the toggle states onto the checkboxes.
+      setPrivate(isPrivate());
+      suppressToggle.set(suppressToggle.isOn());
       $mini.hide();
       $full.show();
       $textarea.trigger('focus');
@@ -135,9 +149,9 @@
       $input.val('');
       $full.hide();
       $mini.show();
-      // The private toggle is deliberately NOT reset: it is visible on the bar,
+      // The toggles are deliberately NOT reset: they are visible on the bar,
       // and quietly flipping a note back to public is the one mistake here with
-      // a real consequence.
+      // a real consequence. Suppress follows suit so the two behave alike.
       syncMiniSubmit();
       $input.trigger('focus');
     }
@@ -172,6 +186,7 @@
     var $coreUpdate  = $('#update');
     var $coreNotes   = $('#issue_notes');
     var $corePrivate = $('#issue_private_notes');
+    var $coreSuppress = $('#issue_suppress_mail');
     var coreShowAndScrollTo = window.showAndScrollTo;
 
     // Whether core's edit form is open. Maintained continuously by the watcher
@@ -283,6 +298,10 @@
       if (isPrivate() && $corePrivate.length) {
         $corePrivate.prop('checked', true);
       }
+      // Likewise a note meant to go out quietly stays quiet.
+      if (suppressToggle.isOn() && $coreSuppress.length) {
+        $coreSuppress.prop('checked', true);
+      }
 
       $textarea.val('');
       $input.val('');
@@ -361,9 +380,8 @@
     $form.on('submit', function (e) {
       if ($full.is(':hidden')) {
         $textarea.val($input.val());
-        if ($toggle.length && $private.length) {
-          $private.prop('checked', isPrivate());
-        }
+        setPrivate(isPrivate());
+        suppressToggle.set(suppressToggle.isOn());
       }
       if ($.trim($textarea.val()).length === 0) {
         e.preventDefault();

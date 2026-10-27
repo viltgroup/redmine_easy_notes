@@ -55,31 +55,33 @@
   padding-inline-start: 8px;
 }
 
-/* --- public / private toggle -------------------------------------------------
+/* --- toggles (public / private, notify / suppress) ---------------------------
    Both icons are rendered and one is hidden, rather than rewriting the <use>
    href, because the href carries the asset digest. Note that core has
    `.icon-only span { display: none }`, so the icons must not be wrapped in
    spans -- they are distinguished by a css_class on the svg itself. */
 
-#easy-notes-private-toggle svg.easy-notes-spy {
+.easy-notes-toggle svg.easy-notes-icon-on {
   display: none;
 }
 
-#easy-notes-private-toggle.private svg.easy-notes-spy-off {
+.easy-notes-toggle.on svg.easy-notes-icon-off {
   display: none;
 }
 
-#easy-notes-private-toggle.private svg.easy-notes-spy {
+.easy-notes-toggle.on svg.easy-notes-icon-on {
   display: inline;
 }
 
-/* When private, the icon takes the colour a native checked checkbox paints its
+/* When on, the icon takes the colour a native checked checkbox paints its
    interior with. easy_notes.js resolves --easy-notes-private-color from the
-   computed accent-color of the real private-notes checkbox, so a theme that sets
-   accent-color is followed automatically; AccentColor is the fallback, and a
-   theme can also just override the property. The id keeps this ahead of core's
-   `a.icon-only:hover .icon-svg` without !important. */
-#easy-notes-private-toggle.private svg.icon-svg,
-#easy-notes-private-toggle.private:hover svg.icon-svg {
+   computed accent-color of a real checkbox in the full editor, so a theme that
+   sets accent-color is followed automatically; AccentColor is the fallback, and
+   a theme can also just override the property. The ids keep this ahead of
+   core's `a.icon-only:hover .icon-svg` without !important. */
+#easy-notes-private-toggle.on svg.icon-svg,
+#easy-notes-private-toggle.on:hover svg.icon-svg,
+#easy-notes-suppress-toggle.on svg.icon-svg,
+#easy-notes-suppress-toggle.on:hover svg.icon-svg {
   stroke: var(--easy-notes-private-color, AccentColor);
 }

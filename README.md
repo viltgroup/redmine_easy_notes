@@ -16,11 +16,14 @@ not in core.
 A bar styled like a journal entry appears below the notes. It contains:
 
 * a one-line text field, placeholder "Add your note"
-* an "Open full editor" icon that swaps the bar for the full editor (jstoolbar,
+* an "Open Full Editor" icon that swaps the bar for the full editor (jstoolbar,
   preview, `@`-mention autocomplete, private notes, attachments), keeping
   whatever was typed
-* a public/private toggle: a `spy-off` icon labelled "Public Note" that flips to
-  `spy` labelled "Private Note", coloured like a checked checkbox
+* a public/private toggle: a `users-group` icon labelled "Public Note" that
+  flips to `spy` labelled "Private Note", coloured like a checked checkbox
+* a notify/suppress toggle: a `mailbox` icon labelled "Watchers will be
+  Notified" that flips to `mailbox-off` labelled "Notifications are
+  Suppressed", coloured the same way (see [Suppressing notifications](#suppressing-notifications))
 * an "Add Note" button, disabled until the field has something in it
 
 One click on the icon, or Shift+Enter, swaps the bar for the full editor:
@@ -60,6 +63,31 @@ There is one note being composed at a time, and one of the two editors is
 showing it. Switching hands the text over instead of leaving a copy behind, so
 the two boxes cannot drift apart and show different things.
 
+Suppressing notifications behaves the same way: the toggle and the full
+editor's "Suppress Notifications" checkbox stay in sync, Cancel does not reset
+it, and handing a note to the edit form carries it across.
+
+## Suppressing notifications
+
+A note can be added without anyone being emailed. The journal is saved as
+usual; only the notification mail is skipped, via core's `Journal#notify`. It
+is off by default and has to be chosen for each note:
+
+* on the bar, the `mailbox` toggle
+* in the full editor, and under the notes of core's issue edit form, a
+  "Suppress Notifications" checkbox
+
+This replaces [redmine_silencer](https://github.com/paginagmbh/redmine_silencer)
+and uses the same permission name, `suppress_mail_notifications`, so roles that
+granted it there grant it here with nothing to re-tick. **Do not install both**:
+the role form would list the permission twice and the edit form would show two
+checkboxes. The silencer's bulk-edit checkbox and its "ticked by default"
+setting are not carried over.
+
+The permission sits outside the module, as it did under the silencer, so the
+edit form's checkbox works in every project. The bar's toggle needs the module,
+like the rest of the bar.
+
 ## Switching it on per project
 
 It is a project module, so it is off until someone turns it on. Go to
@@ -91,7 +119,9 @@ that includes modules left behind by plugins you have since uninstalled.
 
 The bar renders only when `@issue.notes_addable?`, which is the "Add notes"
 (`add_issue_notes`) permission. The private toggle and checkbox appear only with
-`set_notes_private`. The attachment field appears only when
+`set_notes_private`. The suppress toggle and checkboxes appear only with
+"Suppress email notifications" (`suppress_mail_notifications`), which the
+server checks again on save. The attachment field appears only when
 `attachments_addable?`.
 
 Registering a project module requires naming at least one permission, so there
@@ -121,8 +151,8 @@ digests and the plugin looks like it did nothing.
 
 ## Theming
 
-The private toggle's colour is read at runtime from the computed `accent-color`
-of the real "Private notes" checkbox, so a theme that sets `accent-color` on
+The toggles' "on" colour is read at runtime from the computed `accent-color`
+of a real checkbox in the full editor, so a theme that sets `accent-color` on
 checkboxes is matched without configuration. Where that resolves to `auto`, the
 CSS system colour `AccentColor` is used. To force a colour, set the property:
 
@@ -139,6 +169,7 @@ colours and hover.
 
 GPL-2.0-or-later, matching Redmine.
 
-The `spy` and `spy-off` icons in `assets/images/icons.svg` come from
+The `spy`, `users-group`, `mailbox` and `mailbox-off` icons in
+`assets/images/icons.svg` come from
 [Tabler Icons](https://tabler.io/icons) (MIT, (c) 2020-2024 Pawel Kuna), the same
 set Redmine core draws its own sprite from, so they match visually.

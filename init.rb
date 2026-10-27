@@ -28,6 +28,17 @@ Redmine::Plugin.register :redmine_easy_notes do
   project_module :easy_notes do
     permission :view_easy_notes, {}, public: true
   end
+
+  # Takes over from redmine_silencer, which registered the same name. Roles keep
+  # their permissions as a list of names, and that list survives a plugin being
+  # removed, so every role that granted it under the silencer grants it again
+  # here with nothing to re-tick. Do not install both: the role form would list
+  # it twice and the edit form would get two checkboxes.
+  #
+  # Deliberately outside the module, as it was under the silencer: the issue
+  # edit form's checkbox works in every project, and only the quick bar's toggle
+  # needs Easy notes switched on.
+  permission :suppress_mail_notifications, {}
 end
 
 require File.expand_path('lib/redmine_easy_notes/hooks', __dir__)

@@ -1,7 +1,11 @@
 pt:
   label_easy_notes_placeholder: "Adicione a sua nota"
   button_easy_notes_add: "Adicionar Nota"
-  button_easy_notes_full_editor: "Abrir editor completo"
+  button_easy_notes_full_editor: "Abrir Editor Completo"
   label_easy_notes_public_note: "Nota Pública"
   label_easy_notes_private_note: "Nota Privada"
   project_module_easy_notes: "Notas rápidas"
+  label_easy_notes_suppress_mail: "Suprimir Notificações"
+  label_easy_notes_notify: "Os observadores serão notificados"
+  label_easy_notes_suppressed: "As notificações estão suprimidas"
+  permission_suppress_mail_notifications: "Suprimir notificações por email"

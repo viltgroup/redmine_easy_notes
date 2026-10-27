@@ -8,6 +8,7 @@
 <% if @issue && !@issue.new_record? &&
       @issue.project&.module_enabled?(:easy_notes) &&
       @issue.notes_addable? %>
+  <% suppressible = User.current.allowed_to?(:suppress_mail_notifications, @issue.project) %>
   <%= stylesheet_link_tag 'easy_notes', plugin: 'redmine_easy_notes' %>
 
   <div id="easy-notes" class="journal" style="display:none;">
@@ -29,16 +30,29 @@
                         title: l(:button_easy_notes_full_editor),
                         class: 'icon-only icon-issue-edit' %>
           </span>
+          <%# Each toggle mirrors, and stays in sync with, a checkbox in the full
+              editor below: the off icon shows until it is pressed, then the on
+              icon, coloured like a checked checkbox. %>
           <% if @issue.safe_attribute?('private_notes') %>
-            <%# Public/private toggle. Mirrors, and stays in sync with, the
-                issue[private_notes] checkbox in the full editor below. %>
-            <a href="#" id="easy-notes-private-toggle" class="icon-only"
+            <%# Public/private, mirroring issue[private_notes]. %>
+            <a href="#" id="easy-notes-private-toggle" class="icon-only easy-notes-toggle"
                title="<%= l(:label_easy_notes_public_note) %>"
                role="button" aria-pressed="false"
-               data-label-public="<%= l(:label_easy_notes_public_note) %>"
-               data-label-private="<%= l(:label_easy_notes_private_note) %>">
-              <%= sprite_icon('spy-off', css_class: 'easy-notes-spy-off', plugin: 'redmine_easy_notes') %>
-              <%= sprite_icon('spy', css_class: 'easy-notes-spy', plugin: 'redmine_easy_notes') %>
+               data-label-off="<%= l(:label_easy_notes_public_note) %>"
+               data-label-on="<%= l(:label_easy_notes_private_note) %>">
+              <%= sprite_icon('users-group', css_class: 'easy-notes-icon-off', plugin: 'redmine_easy_notes') %>
+              <%= sprite_icon('spy', css_class: 'easy-notes-icon-on', plugin: 'redmine_easy_notes') %>
+            </a>
+          <% end %>
+          <% if suppressible %>
+            <%# Notify/suppress, mirroring suppress_mail. %>
+            <a href="#" id="easy-notes-suppress-toggle" class="icon-only easy-notes-toggle"
+               title="<%= l(:label_easy_notes_notify) %>"
+               role="button" aria-pressed="false"
+               data-label-off="<%= l(:label_easy_notes_notify) %>"
+               data-label-on="<%= l(:label_easy_notes_suppressed) %>">
+              <%= sprite_icon('mailbox', css_class: 'easy-notes-icon-off', plugin: 'redmine_easy_notes') %>
+              <%= sprite_icon('mailbox-off', css_class: 'easy-notes-icon-on', plugin: 'redmine_easy_notes') %>
             </a>
           <% end %>
           <%# An <input type=submit>, not a <button type=submit>: themes reliably
@@ -58,8 +72,8 @@
     </div>
 
     <%# --- expanded state: the full editor --------------------------------------- %>
-    <%# Only issue[notes] (and optionally issue[private_notes]) is submitted, to the
-        stock PATCH /issues/:id. Two consequences, both wanted:
+    <%# Only issue[notes] (and optionally issue[private_notes] and suppress_mail)
+        is submitted, to the stock PATCH /issues/:id. Two consequences, both wanted:
           * lock_version is NOT sent, so adding a note can never raise
             ActiveRecord::StaleObjectError -- the complaint in Redmine feature #3143.
           * 'notes' is guarded by notes_addable? in Issue#safe_attributes while
@@ -79,6 +93,12 @@
             <%= hidden_field_tag 'issue[private_notes]', '0', id: nil %>
             <%= check_box_tag 'issue[private_notes]', '1', false, id: 'easy-notes-private' %>
             <label for="easy-notes-private"><%= l(:field_private_notes) %></label>
+          <% end %>
+
+          <% if suppressible %>
+            <%= hidden_field_tag 'suppress_mail', '0', id: nil %>
+            <%= check_box_tag 'suppress_mail', '1', false, id: 'easy-notes-suppress' %>
+            <label for="easy-notes-suppress"><%= l(:label_easy_notes_suppress_mail) %></label>
           <% end %>
 
           <% if @issue.attachments_addable? %>
