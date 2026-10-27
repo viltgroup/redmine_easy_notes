@@ -8,11 +8,14 @@ module RedmineEasyNotes
   # here as well means a switch added in a later version starts at its default
   # instead of reading as off on an install that saved the form before it existed.
   module Settings
-    # All on, which is how the plugin behaved before these switches existed.
+    # All on. The first three are how the plugin behaved before these switches
+    # existed; private_attachments changes core's behaviour, see
+    # PrivateAttachments.
     DEFAULTS = {
       'private_toggle' => '1',
       'silencer' => '1',
-      'suppress_toggle' => '1'
+      'suppress_toggle' => '1',
+      'private_attachments' => '1'
     }.freeze
 
     def self.on?(key)
@@ -36,6 +39,12 @@ module RedmineEasyNotes
     # The suppress icon on the one-line bar. Meaningless without the feature.
     def self.suppress_toggle?
       silencer? && on?('suppress_toggle')
+    end
+
+    # Files added on a private note stay on it, and only its readers can open
+    # them. Applies on every project, like core's private notes themselves.
+    def self.private_attachments?
+      on?('private_attachments')
     end
   end
 end

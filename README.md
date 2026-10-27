@@ -90,7 +90,7 @@ like the rest of the bar.
 
 ## Plugin settings
 
-**Administration, Plugins, Redmine Easy Notes, Configure** has three switches,
+**Administration, Plugins, Redmine Easy Notes, Configure** has four switches,
 all on by default:
 
 | Setting | Off means |
@@ -98,6 +98,7 @@ all on by default:
 | Private notes toggleable icon in quick notes mini form | No public/private icon on the bar. The full editor's "Private notes" checkbox stays |
 | Enable redmine_silencer feature | No suppress icon, no "Suppress Notifications" checkboxes anywhere, and a submitted `suppress_mail` is ignored |
 | Suppress watchers toggleable icon in quick notes mini form | No suppress icon on the bar. The checkboxes stay. Only offered while the feature above is on |
+| Files added on private notes are private to the note | Core's behaviour: see below |
 
 With an icon switched off, a value set on the full editor's checkbox is cleared
 when the editor is cancelled, since the bar has nowhere to show it.
@@ -105,6 +106,37 @@ when the editor is cancelled, since the bar has nowhere to show it.
 The `suppress_mail_notifications` permission stays in the role form even with
 the feature off, because permissions are registered at boot. It grants nothing
 until the feature is switched back on.
+
+## Files on private notes
+
+Core keeps a private note to its text alone. Any file added with it is moved
+into a separate, public history entry ("File added"), listed in the issue's
+Files section, and downloadable by anyone who can see the issue. So a
+team-only discussion still shows up to everyone else as new files.
+
+With the switch on, a file added on a private note stays on that note:
+
+* it is shown under the note, and mailed only with the note, to the people
+  who can see private notes;
+* only the note's author and users with "View private notes" can open,
+  download or preview it; anyone else gets "access denied";
+* the issue's Files section leaves it out, for everyone. It is listed under
+  its note only.
+
+This applies on every project, whether or not Easy notes is on there, and to
+both the bar and core's edit form. Other changes saved with the note (status,
+fields) still go into a public entry, as in core.
+
+Nothing extra is stored: a file is private because it was recorded on a
+private note. Switching the setting off makes those files visible and listed
+again. Files added on private notes before this existed were already split off
+by core into public entries, and stay public. A note made private afterwards
+through core's "Edit" takes its files with it.
+
+Only the Files section filters them out. The "Download all" zip, the issue
+list's Files column and filter, the REST API and issue copies still include
+them. They are hidden from the Files section so as not to be awkward, not as
+access control for sensitive files.
 
 ## Switching it on per project
 

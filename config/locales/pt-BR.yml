@@ -12,3 +12,4 @@ pt-BR:
   setting_easy_notes_private_toggle: "Ícone de nota privada no formulário rápido"
   setting_easy_notes_silencer: "Ativar a funcionalidade redmine_silencer"
   setting_easy_notes_suppress_toggle: "Ícone de suprimir notificações no formulário rápido"
+  setting_easy_notes_private_attachments: "Arquivos adicionados em notas privadas ficam privados à nota"

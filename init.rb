@@ -54,3 +54,4 @@ Redmine::Plugin.register :redmine_easy_notes do
 end
 
 require File.expand_path('lib/redmine_easy_notes/hooks', __dir__)
+require File.expand_path('lib/redmine_easy_notes/private_attachments', __dir__)

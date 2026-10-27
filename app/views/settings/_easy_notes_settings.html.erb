@@ -26,6 +26,13 @@
                     id: 'settings_suppress_toggle' %>
 </p>
 
+<p>
+  <label for="settings_private_attachments"><%= l(:setting_easy_notes_private_attachments) %></label>
+  <%= hidden_field_tag 'settings[private_attachments]', '0', id: nil %>
+  <%= check_box_tag 'settings[private_attachments]', '1', RedmineEasyNotes::Settings.private_attachments?,
+                    id: 'settings_private_attachments' %>
+</p>
+
 <%= javascript_tag do %>
   $(function () {
     $('#settings_silencer').on('change', function () {
